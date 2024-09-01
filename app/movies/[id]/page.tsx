@@ -1,6 +1,9 @@
+import { Suspense } from "react";
 import { fetchMovieById } from "@/actions/movies";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ErrorBoundary } from "react-error-boundary";
+import { Loading } from "@/components/Loading";
 
 interface MoviePageProps {
   params: {
@@ -8,18 +11,30 @@ interface MoviePageProps {
   };
 }
 
-export default async function MoviePage({ params }: MoviePageProps) {
-  const movie = await fetchMovieById(parseInt(params.id));
+export default function MoviePage({ params }: MoviePageProps) {
+  return (
+    <ErrorBoundary
+      fallback={<div>Error loading movie. Please try again later.</div>}
+    >
+      <Suspense fallback={<Loading />}>
+        <MovieDetails id={parseInt(params.id)} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+async function MovieDetails({ id }: { id: number }) {
+  const movie = await fetchMovieById(id);
 
   if (!movie) {
-    return notFound();
+    notFound();
   }
 
   return (
     <main className="flex flex-col items-center p-8">
       <div className="max-w-lg w-full">
         <Image
-          src={movie.imageUrl} // Ensure imageUrl or use a placeholder
+          src={movie.imageUrl || "/placeholder.jpg"}
           alt={movie.title}
           width={300}
           height={450}
