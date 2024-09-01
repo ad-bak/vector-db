@@ -1,9 +1,53 @@
 "use server";
 
-import { prisma } from "@/prisma/prisma";
+import { db } from "@/drizzle/db";
+import { movie } from "@/drizzle/schema";
+import { sql } from "drizzle-orm";
+
+export async function fetchMovies(page = 1, limit = 10) {
+  try {
+    const skip = (page - 1) * limit;
+
+    const totalMovies = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(movie)
+      .execute();
+    const total = Number(totalMovies[0].count);
+
+    const movies = await db
+      .select()
+      .from(movie)
+      .limit(limit)
+      .offset(skip)
+      .execute();
+
+    const moviesWithImages = await Promise.all(
+      movies.map(async (movie) => {
+        const imageUrl = await fetchMovieImage(movie.title);
+        return {
+          ...movie,
+          imageUrl,
+        };
+      })
+    );
+
+    return {
+      movies: moviesWithImages,
+      metadata: {
+        total,
+        page,
+        limit,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch movies:", error);
+    throw new Error("Failed to fetch movies. Please try again later.");
+  }
+}
 
 async function fetchMovieImage(title: string) {
   try {
+    console.log("Fetching image for movie:", title);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/movies/${encodeURIComponent(
         title
@@ -20,50 +64,20 @@ async function fetchMovieImage(title: string) {
   }
 }
 
-export async function fetchMovies(page = 1, limit = 10) {
-  try {
-    const skip = (page - 1) * limit;
-
-    const movies = await prisma.movie.findMany({
-      take: limit,
-      skip: skip,
-    });
-
-    const moviesWithImages = await Promise.all(
-      movies.map(async (movie) => ({
-        ...movie,
-        imageUrl: await fetchMovieImage(movie.title),
-      }))
-    );
-
-    const total = await prisma.movie.count();
-
-    return {
-      movies: moviesWithImages,
-      metadata: {
-        total,
-        page,
-        limit,
-      },
-    };
-  } catch (error) {
-    console.error("Failed to fetch movies:", error);
-    throw new Error("Failed to fetch movies. Please try again later.");
-  }
-}
-
 export async function fetchMovieById(id: number) {
   try {
-    const movie = await prisma.movie.findUnique({
-      where: { id },
-    });
+    const movieResult = await db
+      .select()
+      .from(movie)
+      .where(sql`${movie.id} = ${id}`)
+      .execute();
 
-    if (!movie) return null;
+    if (!movieResult.length) return null;
 
-    const imageUrl = await fetchMovieImage(movie.title);
+    const imageUrl = await fetchMovieImage(movieResult[0].title);
 
     return {
-      ...movie,
+      ...movieResult[0],
       imageUrl,
     };
   } catch (error) {

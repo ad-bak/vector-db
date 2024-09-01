@@ -1,8 +1,9 @@
-// lib/vectorStore.ts
+import { db } from "@/drizzle/db";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { Document } from "@langchain/core/documents";
-import { prisma } from "@/prisma/prisma";
+import { sql } from "drizzle-orm";
+import { movie } from "@/drizzle/schema";
 
 class VectorStore {
   private vectorStore: MemoryVectorStore | null = null;
@@ -19,7 +20,7 @@ class VectorStore {
     if (this.initialized) return;
 
     console.log("Fetching movies from database...");
-    const movies = await prisma.movie.findMany();
+    const movies = await db.select().from(movie).execute();
     console.log(`Fetched ${movies.length} movies.`);
 
     console.log("Creating document objects...");
@@ -57,9 +58,12 @@ class VectorStore {
       const movieIds = results.map((doc) => doc.metadata.movieId as number);
       console.log(`Found ${movieIds.length} similar movies.`);
 
-      return await prisma.movie.findMany({
-        where: { id: { in: movieIds } },
-      });
+      const movies = await db
+        .select()
+        .from(movie)
+        .where(sql`${movie.id} IN (${movieIds.join(", ")})`)
+        .execute();
+      return movies;
     } catch (error) {
       console.error("Error searching similar movies:", error);
       return [];
