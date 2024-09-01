@@ -12,7 +12,7 @@ export default function MovieImage({ imageUrl, alt }: MovieImageProps) {
   const [loading, setLoading] = useState(true);
 
   return (
-    <div className="relative w-full h-60 bg-gray-300 flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-52 bg-gray-300 flex items-center justify-center overflow-hidden">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>

@@ -3,6 +3,7 @@ import MovieList from "@/components/MovieList";
 import { Suspense } from "react";
 import Pagination from "@/components/Pagination";
 import { fetchMovies } from "@/actions/movies";
+import Chatbot from "@/components/Chatbot";
 
 export default async function Home({
   searchParams,
@@ -22,6 +23,7 @@ export default async function Home({
         currentPage={page}
         totalPages={Math.ceil(metadata.total / metadata.limit)}
       />
+      <Chatbot />
     </main>
   );
 }
