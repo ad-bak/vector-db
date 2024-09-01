@@ -1,4 +1,6 @@
-import { NextResponse } from "next/server";
+// actions/chatbot.ts
+"use server";
+
 import { PromptTemplate } from "@langchain/core/prompts";
 import { OpenAI } from "@langchain/openai";
 import { RunnableSequence } from "@langchain/core/runnables";
@@ -9,10 +11,8 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY is not set in the environment variables");
 }
 
-export async function POST(req: Request) {
+export async function getChatbotResponse(message: string) {
   try {
-    const { message } = await req.json();
-
     const similarMovies = await vectorStore.searchSimilarMovies(message);
 
     const llm = new OpenAI({
@@ -22,12 +22,14 @@ export async function POST(req: Request) {
 
     const template = `You are a helpful movie recommendation chatbot. Based on the user's message and the following similar movies, provide a friendly response. If the user's message is a greeting or unrelated to movies, respond in a friendly manner without movie recommendations.
 
+When mentioning a movie title, format it as a Markdown link like this: [Movie Title](/movies/ID), replacing ID with the movie's ID.
+
 User message: {message}
 
 Similar movies:
 {similarMovies}
 
-Your response:`;
+Your response (in Markdown format):`;
 
     const prompt = PromptTemplate.fromTemplate(template);
 
@@ -41,6 +43,7 @@ Your response:`;
       message,
       similarMovies: JSON.stringify(
         similarMovies.map((movie) => ({
+          id: movie.id,
           title: movie.title,
           description: movie.description,
           releaseYear: movie.releaseYear,
@@ -50,12 +53,9 @@ Your response:`;
       ),
     });
 
-    return NextResponse.json({ response: result });
+    return { response: result };
   } catch (error) {
-    console.error("Error in chatbot API:", error);
-    return NextResponse.json(
-      { error: "An error occurred while processing your request" },
-      { status: 500 }
-    );
+    console.error("Error in chatbot action:", error);
+    throw new Error("An error occurred while processing your request");
   }
 }

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import Link from "next/link";
+import { getChatbotResponse } from "@/actions/chatbot";
 
 export default function Chatbot() {
   const [message, setMessage] = useState("");
@@ -12,13 +16,8 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/chatbot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
-      });
-      const data = await res.json();
-      setResponse(data.response);
+      const result = await getChatbotResponse(message);
+      setResponse(result.response);
     } catch (error) {
       console.error("Error:", error);
       setResponse("Sorry, there was an error processing your request.");
@@ -47,7 +46,21 @@ export default function Chatbot() {
       </form>
       {response && (
         <div className="mt-4 p-4 bg-gray-100 rounded">
-          <p>{response}</p>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              a: ({ node, ...props }) => (
+                <Link
+                  href={props.href || ""}
+                  className="text-blue-500 hover:underline"
+                >
+                  {props.children}
+                </Link>
+              ),
+            }}
+          >
+            {response}
+          </ReactMarkdown>
         </div>
       )}
     </div>
