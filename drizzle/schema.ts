@@ -22,3 +22,19 @@ export const movie = pgTable("Movie", {
 });
 
 export type Movie = typeof movie.$inferSelect;
+
+export const movieEmbedding = pgTable("MovieEmbedding", {
+  id: serial("id").primaryKey().notNull(),
+  movieId: integer("movie_id")
+    .notNull()
+    .references(() => movie.id),
+  embedding: vector("embedding", { dimensions: 1536 }),
+  createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { precision: 3, mode: "string" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
+export type MovieEmbedding = typeof movieEmbedding.$inferSelect;

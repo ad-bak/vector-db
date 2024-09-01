@@ -8,6 +8,13 @@
       "when": 1725211170658,
       "tag": "0000_tiny_hiroim",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1725223317617,
+      "tag": "0001_stale_grim_reaper",
+      "breakpoints": true
     }
   ]
 }

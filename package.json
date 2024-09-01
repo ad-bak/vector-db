@@ -11,7 +11,8 @@
     "migrate": "drizzle-kit migrate",
     "seed": "ts-node -r tsconfig-paths/register --compiler-options '{\"module\":\"CommonJS\"}' drizzle/seed.ts",
     "vectorize": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' actions/vectorize.ts",
-    "test-vectorization": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' test-vectorization.ts"
+    "test-vectorization": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' test-vectorization.ts",
+    "generate-embeddings": "ts-node -r tsconfig-paths/register --compiler-options '{\"module\":\"CommonJS\"}' generateEmbeddings.ts"
   },
   "dependencies": {
     "@langchain/community": "^0.2.31",

@@ -39,7 +39,15 @@ Your response:`;
 
     const result = await chain.invoke({
       message,
-      similarMovies: JSON.stringify(similarMovies),
+      similarMovies: JSON.stringify(
+        similarMovies.map((movie) => ({
+          title: movie.title,
+          description: movie.description,
+          releaseYear: movie.releaseYear,
+          genre: movie.genre,
+          distance: movie.distance,
+        }))
+      ),
     });
 
     return NextResponse.json({ response: result });

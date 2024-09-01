@@ -47,7 +47,6 @@ export async function fetchMovies(page = 1, limit = 10) {
 
 async function fetchMovieImage(title: string) {
   try {
-    console.log("Fetching image for movie:", title);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/movies/${encodeURIComponent(
         title
